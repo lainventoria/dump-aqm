@@ -1,0 +1,48 @@
+#!/bin/bash
+
+if test $# -eq 0 ; then
+  echo "edita los datos de conexión y después corré:"
+  echo "$0 dump_aqm_faltante.mysql"
+  exit
+fi
+
+user=root
+password=cambiame
+database=siafa
+database_local=siafa_temporal
+
+function mysql() {
+  /usr/bin/mysql -u ${user} --password="${password}" $@
+}
+
+echo "crear la base de datos local si no existe"
+echo "create database if not exists ${database_local};" | mysql
+
+echo "cargarle los datos"
+mysql ${database_local} <"$1"
+
+echo "obtener los equipos del dump local"
+echo "select equipo_id from reg_sesions where equipo_id is not null group by equipo_id;" |
+mysql ${database_local} | tail -n+2 | while read equipo_id; do
+  test -z "$equipo_id" && continue
+  echo "y por cada uno eliminarlo de la base de datos"
+  echo "delete from reg_sesions where equipo_id = ${equipo_id}" | mysql ${database}
+
+# hubiera sido mas simple hacer select * pero el id tiene que ser null
+# para que se creen los correspondientes en la base completa
+  echo "luego insertar los que están en la base de datos local"
+  echo "insert into reg_sesions
+select null ,nro_serie ,fecha ,lat ,\`long\` ,obs ,equipo_id ,timestamp ,sen_id_1
+,sen_id_2 ,sen_id_3 ,sen_id_4 ,sen_id_5 ,sen_id_6 ,sen_id_7 ,sen_id_8
+,sen_id_9 ,sen_id_10 ,sen_id_11 ,sen_id_12 ,sen_id_13 ,sen_val_1
+,sen_val_2 ,sen_val_3 ,sen_val_4 ,sen_val_5 ,sen_val_6 ,sen_val_7
+,sen_val_8 ,sen_val_9 ,sen_val_10 ,sen_val_11 ,sen_val_12 ,sen_val_13
+from ${database_local}.reg_sesions where equipo_id = ${equipo_id};" |
+  mysql ${database}
+done
+
+for db in ${database_local} ${database}; do
+  echo "resumen ${db}"
+  echo "select equipo_id, count(*) as cuenta from reg_sesions group by equipo_id;" |
+  mysql ${db}
+done
