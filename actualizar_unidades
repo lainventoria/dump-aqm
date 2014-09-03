@@ -1,0 +1,19 @@
+#!/bin/bash
+# Uso: actualizar_unidades | mysql
+# Tip: Usar .my.cnf para especificar las credenciales por defecto
+
+# Recorrer los 13 sensores
+for i in {1..13}; do
+
+# Recorrer los pares sensor\tunidad
+  echo -e "Temp\tC°\nHum\t%\nCO\tmg/m3\nSO2\tmg/m3\nVOCs\tppm" |
+  while read sensor unidad; do
+# Actualizar los sensores con sus unidades
+  echo "update reg_sesions set sen_id_$i = '${sensor} ${unidad}' where trim(sen_id_$i) like '${sensor}%';"
+
+  done
+
+  echo "update reg_sesions set sen_val_$i = (28.01 * sen_val_$i) / 24.45 where trim(sen_id_$i) like 'CO%';"
+  echo "update reg_sesions set sen_val_$i = (64.06 * sen_val_$i) / 24.45 where trim(sen_id_$i) like 'SO2%';"
+done
+
