@@ -1,9 +1,5 @@
 #!/bin/bash
 # Trimea los datos ya existentes
-if test $# -eq 0 ; then
-  echo "edita los datos de conexión y después correme"
-  exit
-fi
 
 source "$(dirname "$(readlink -f "$0")")/common.inc"
 
@@ -18,4 +14,4 @@ for i in {1..13}; do
   echo "update reg_sesions set sen_val_$i = $(trim_function "sen_val_$i" 2 ) where trim(sen_id_$i) like 'SO2%';"
   echo "update reg_sesions set sen_val_$i = $(trim_function "sen_val_$i" 3 ) where trim(sen_id_$i) like 'VOCs%';"
 done |
-mysql
+mysql ${database}
