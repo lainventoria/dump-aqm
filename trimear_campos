@@ -1,0 +1,9 @@
+#!/bin/bash
+# Uso: actualizar_unidades | mysql
+# Tip: Usar .my.cnf para especificar las credenciales por defecto
+
+# Recorrer los 13 sensores
+for i in {1..13}; do
+  echo "update reg_sesions set sen_id_$i = trim(sen_id_$i);"
+done
+
