@@ -1,19 +1,11 @@
 #!/bin/bash
-
 if test $# -eq 0 ; then
   echo "edita los datos de conexión y después corré:"
   echo "$0 dump_aqm_faltante.mysql"
   exit
 fi
 
-user=root
-password=cambiame
-database=siafa
-database_local=siafa_temporal
-
-function mysql() {
-  /usr/bin/mysql -u ${user} --password="${password}" $@
-}
+source "$(dirname "$(readlink -f "$0")")/common.inc"
 
 echo "crear la base de datos local si no existe"
 echo "create database if not exists ${database_local};" | mysql
